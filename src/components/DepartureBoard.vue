@@ -80,7 +80,6 @@
           }
         }
       })).data.map(stop => stop.id);
-      console.log(commuter_rail_route_ids);
 
       let schedules = await mbtaApi.get('schedules', {  
         params: {
@@ -88,30 +87,21 @@
           include: 'route,prediction,prediction.stop,trip',
           filter: { route: commuter_rail_route_ids.join(','),
                     stop: this.stationId,
-                    //Edge cases around the day boundary (such as a delayed train arriving after 3am) should be investigated
+                    //Edge cases around the day boundary (such as a delayed train arriving after 3am, or trains departing 3am-6am) should be fixed
                     date: moment().tz('America/New_York').subtract('3 hours').format('YYYY-MM-DD'),//MBTA days run from 3am to 3am
-                    // min_time: (moment().tz('America/New_York').format('HH') + 3 - 2) + ":00",//Fetch between 2 hours before and 2 hours after current schedule 
-                    // max_time: (moment().tz('America/New_York').format('HH') + 3 + 2) + ":00",// 
           }
         }
       });
-      console.log(schedules);
 
 
       let filteredSchedules = schedules.data.filter(schedule => {
         //departure time < 2 hours in future and < 30 minutes in past
-        if ((moment(schedule.departure_time).isBefore(moment().add(2, 'hours')) 
+        return ((moment(schedule.departure_time).isBefore(moment().add(2, 'hours')) 
             && moment(schedule.departure_time).isAfter(moment().subtract(30, 'minutes'))
             //Departure time in past and we have a prediction - catches trains more than 30 minutes late
             || moment(schedule.departure_time).isBefore(moment()) && schedule.prediction.data)
-           ) {
-          return true;
-        } else {
-          return false;
-        }
+           )
       });
-
-      console.log(filteredSchedules);
 
       let rows = filteredSchedules.map(schedule => {
         let time = schedule.departure_time;
@@ -143,7 +133,6 @@
         }
       });
 
-      console.log(rows);
       this.departures = rows;
 
       this.refreshTimeoutId = setTimeout(this.fetchMbtaData, refreshTime);

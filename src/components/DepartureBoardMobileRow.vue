@@ -3,7 +3,7 @@
           <span class="time">{{departure.time}}</span>
           <span class="destination">{{departure.destination}}</span>
           <span class="train">MBTA {{departure.trainNum}}</span>
-          <span class="track">{{departure.trackNum && "Track" + departure.trackNum}}</span>
+          <span class="track">{{departure.trackNum && "Track " + departure.trackNum}}</span>
           <span class="status" v-bind:class="[departure.onTime ? 'green' : 'red']">{{departure.status}}</span>
       </li>
 </template>
@@ -11,9 +11,6 @@
   export default {
     name: 'DepartureBoardMobileRow',
     props: ['departure'],
-    beforeMount() {
-        
-    }
   }
 </script>
 <style lang="scss" scoped>
@@ -21,9 +18,9 @@
         font-size: 1em;
         padding: 1em 0.5em;
         display: grid;
-        align-items: baseline;
+        align-items: center;
         grid-row-gap: 0.1em;
-        grid-template-columns: 6em auto 4em;
+        grid-template-columns: 6em minmax(0, 1fr) 4em;
         grid-template-rows: auto auto;
         grid-template-areas: 
         "time destination status"
@@ -36,6 +33,8 @@
         align-self: center;
     }
     .destination {
+        margin-right: 0.3em;
+        overflow: hidden;
         font-weight: 500;
         grid-area: destination;
     }
